@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS kids_friends, friends_siblings, siblings, kids, friends;
