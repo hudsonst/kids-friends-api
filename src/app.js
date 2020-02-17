@@ -6,6 +6,7 @@ const {CLIENT_ORIGIN} = require('./config');
 const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
 const kidsRouter = require('./kids/kids-routers')
+const friendsRouter = require('./friends/friends-routers')
 
 const app = express()
 
@@ -20,6 +21,7 @@ app.use(cors({
 }))
 
 app.use('/api/kids', kidsRouter)
+app.use('/api/friends', friendsRouter)
 
 app.get('/', (req, res) => {
        res.send('Hello, world!')

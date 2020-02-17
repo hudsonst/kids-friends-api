@@ -22,17 +22,8 @@ kidsRouter
         const knexInstance = req.app.get('db')
 
         KidsService.getAllKids(knexInstance)
-            .then(kids => { 
-                const kidsfriendsArr = kids.map (kid => {
-                return KidsService.getKidFriends(knexInstance, kid.id)
-                .then(kidfriends => kidfriends)
-                
-                })
-                console.log(kidsfriendsArr)
-                return kids
-            })
             .then(kids => {
-                
+                console.log('kids', JSON.stringify(kids, null, 2))
                 res.json(kids.map(serializeKid))
             }
             )
@@ -103,12 +94,13 @@ kidsRouter
                         error: { message: `Kid doesn't exist` }
                     })
                 }
-                res.kid = kid
+                return res.kid = kid
                 next()
             })
             .catch(next)
     })
     .get((req, res, next) => {
+        console.log(res.kid)
         res.json(serializeKid(res.kid))
     })
     .patch(jsonParser, (req, res, next) => {

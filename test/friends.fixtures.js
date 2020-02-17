@@ -10,7 +10,7 @@ function makeFriendsArray() {
             plast_name: "Rider",
             birthday: "12-23",
             allergies: "None",
-            notes: "Too cool for school"
+            notes: "Too cool for school",
         },
         {
             id: 2,
@@ -49,6 +49,13 @@ function makeFriendsArray() {
 
 }
 
+function makeSiblingsArray() {
+    return [
+        {id: 1, name: "Leia Rider" },
+        {id: 2, name: "Paul Rider"}
+    ]
+}
+
 function makeKidsFriendsArray() {
     return [
         { kid_id: 1, friend_id: 1 },
@@ -61,7 +68,18 @@ function makeKidsFriendsArray() {
     ]
 }
 
+function makeFriendsSiblingsArray() {
+    return [
+        { sibling_id: 1, friend_id: 1 },
+        { sibling_id: 2, friend_id: 1 },
+        { sibling_id: 1, friend_id: 2 },
+        { sibling_id: 2, friend_id: 2 }
+    ]
+}
+
 module.exports = {
     makeFriendsArray,
-    makeKidsFriendsArray
+    makeKidsFriendsArray,
+    makeSiblingsArray,
+    makeFriendsSiblingsArray
 }
