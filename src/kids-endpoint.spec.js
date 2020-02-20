@@ -1,8 +1,8 @@
 const knex = require('knex')
-const app = require('../src/app')
-const KidsService = require('../src/kids/kids-service')
-const { makeKidsArray} = require('./kids.fixtures')
-const { makeFriendsArray, makeKidsFriendsArray } = require('./friends.fixtures')
+const app = require('./app')
+const KidsService = require('./kids/kids-service')
+const { makeKidsArray} = require('../test/kids.fixtures')
+const { makeFriendsArray, makeKidsFriendsArray } = require('../test/friends.fixtures')
 
 describe(`Kids Endpoints`, function () {
     let db

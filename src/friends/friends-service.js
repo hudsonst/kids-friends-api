@@ -23,17 +23,45 @@ const FriendsService = {
             .join('siblings', 'siblings.id', 'friends_siblings.sibling_id')
             .where('friend_id', friend_id)
             .then(siblings => {
-                return siblings.map(sibling => { return sibling.name })
+                return siblings.map(sibling => sibling.name )
             })
     },
 
-    insertFriend(knex, newFriend, siblings) {
-             return knex.insert(newFriend, siblings)
-                .into('friends', 'siblings')
-                .returning('*')
-                .then(rows => {
-                    return rows[0];
-                })
+    insertFriend(knex, newFriend) {
+        console.log(newFriend)
+        const siblings = newFriend.siblings.map(sibling => {return { name: sibling }})
+        delete newFriend.siblings
+        return knex
+            .insert(newFriend)
+            .into('friends')
+            .returning('id')
+            .then(function (friend_id) {
+               // console.log(siblings)
+                siblings.map(sibling => {
+                  //  console.log('sibling: ' + JSON.stringify(sibling, null, 2))
+                    return knex
+                        .insert(sibling)
+                        .into('siblings')
+                        .returning('id')
+                        })
+                        .then(function (sibling_id) {
+                            
+                            const f_nid = Number(friend_id) 
+                            const s_nid = Number(sibling_id)
+                            const updatedEntry = { sibling_id: s_nid, friend_id: f_nid }
+                            console.log(`Updated Entry: ${s_nid} ${f_nid}`)
+
+                            return knex('friends_siblings')
+                                .insert(updatedEntry)
+                                .catch((err) => {
+                                    console.log(err)
+                                })
+                        })
+                
+                newFriend.id = Number(friend_id)
+                newFriend.siblings = siblings.map(sibling => sibling.name)
+                return newFriend
+            })
     },
 
     getById(knex, id) {

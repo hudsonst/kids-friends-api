@@ -2,7 +2,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const FriendsService = require('../src/friends/friends-service')
 const { makeKidsArray} = require('./kids.fixtures')
-const { makeFriendsArray, makeSiblingsArray, makeFriendsSiblingsArray } = require('./friends.fixtures')
+const { makeFriendsArray, makeSiblingsArray, makeFriendsSiblingsArray, makeFriendsArrayWithSiblings } = require('./friends.fixtures')
 
 describe(`Friends Endpoints`, function () {
     let db
@@ -21,11 +21,12 @@ describe(`Friends Endpoints`, function () {
 
     before('clean the table', () => db.raw('TRUNCATE kids_friends, friends_siblings, siblings, kids, friends RESTART IDENTITY CASCADE'))
     
-    afterEach('cleanup', () => db.raw('TRUNCATE kids_friends, friends_siblings, siblings, kids, friends RESTART IDENTITY CASCADE'))
+    //afterEach('cleanup', () => db.raw('TRUNCATE kids_friends, friends_siblings, siblings, kids, friends RESTART IDENTITY CASCADE'))
 
     describe(`Test friends endpoints`, () => {
         const kidsArray = makeKidsArray();;
         const friendsArray = makeFriendsArray();
+        const friendsWithSiblingsArray = makeFriendsArrayWithSiblings();
         const siblingsArray = makeSiblingsArray();
         const friendsSiblingsArray = makeFriendsSiblingsArray();
 
@@ -51,13 +52,14 @@ describe(`Friends Endpoints`, function () {
                 })
         })
 
-        beforeEach('set Id', () => db.raw('SELECT setval(\'public.friends_id_seq\', (SELECT MAX(id) FROM friends)+1);'))
+        beforeEach('set next friends Id', () => db.raw('SELECT setval(\'public.friends_id_seq\', (SELECT MAX(id) FROM friends));'))
 
-
+        beforeEach('set next siblings Id', () => db.raw('SELECT setval(\'public.siblings_id_seq\', (SELECT MAX(id) FROM siblings));'))
+   
         it(`gets one friend in particular - endpoint`, () => {
             return supertest(app)
                 .get('/api/friends/1')
-                .expect(200, friendsArray[0])
+                .expect(200,  friendsWithSiblingsArray[0])
         })
 
         it(`gets one friend's siblings - endpoint`, () => {
@@ -69,7 +71,6 @@ describe(`Friends Endpoints`, function () {
         })
 
         it.only(`creates a friend, responding with 201 and the new friend`, () => {
-            before('next ID val', () => db.raw('SELECT setval(\'public.kids_id_seq\', (SELECT MAX(id) FROM kids)+1);'))
             const newFriend = {
                 first_name: "Aviya",
                 last_name: "Doe",
@@ -86,22 +87,26 @@ describe(`Friends Endpoints`, function () {
                 .send(newFriend)
                 .expect(201)
                 .expect(res => {
+                    console.log("res: ", res.body)
                     expect(res.body.first_name).to.eql(newFriend.first_name)
                     expect(res.body.last_name).to.eql(newFriend.last_name)
                     expect(res.body.age).to.eql(newFriend.age)
-                    expect(res.body.siblings).to.eql(newFriend.siblings)
                     expect(res.body).to.have.property('id')
                     expect(res.headers.location).to.eql(`/api/friends/${res.body.id}`)
+                    expect(res.body.siblings).to.deep.eql(newFriend.siblings)  
                 })
-                .then(postRes =>
+                .then(postRes => {
+                    console.log("postRes: ", JSON.stringify(postRes.body, null, 2))
                     supertest(app)
                         .get(`/api/friends/${postRes.body.id}`)
-                        .expect(postRes.body)
-                )
-        })
+                        .expect(res => {
+                            console.log("res: "+res.body)
+                         expect(res.body.siblings).to.deep.eql(newFriend.siblings)                      
+                    } )
+        })})
         it('responds with 204 and removes the friend', () => {
             const idToRemove = 2
-            const expectedFriends = friendsArray.filter(friend => friend.id !== idToRemove)
+            const expectedFriends =  friendsWithSiblingsArray.filter(friend => friend.id !== idToRemove)
             return supertest(app)
                 .delete(`/api/friends/${idToRemove}`)
                 .expect(204)

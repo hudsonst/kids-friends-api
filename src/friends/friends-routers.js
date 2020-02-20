@@ -15,111 +15,107 @@ const serializeFriend = friend => ({
     age: xss(friend.age),
     birthday: xss(friend.birthday),
     allergies: xss(friend.allergies),
-    notes: xss(friend.notes)
-})
+    notes: xss(friend.notes),
+    siblings: friend.siblings.map(sibling => { return xss(sibling) })
+    })
 
-const serializeSibling = sibling => ({
-    id: sibling.id,
-    name: xss(sibling.name)
-})
-
-friendsRouter
+    friendsRouter
     .route('/')
-    .post(jsonParser, (req, res, next) => {
-        const { first_name, last_name, pfirst_name, plast_name, age, birthday, allergies, notes, siblings } = req.body
-        const newFriend = { first_name, last_name, pfirst_name, plast_name,age, birthday, allergies, notes }
+        .post(jsonParser, (req, res, next) => {
+            const { first_name, last_name, pfirst_name, plast_name, age, birthday, allergies, notes, siblings } = req.body
+            const newFriend = { first_name, last_name, pfirst_name, plast_name, age, birthday, allergies, notes, siblings }
 
-        for (const [key, value] of Object.entries(first_name))
-            if (value == null)
-                return res.status(400).json({
-                    error: { message: `Missing '${key}' in request body` }
+            for (const [key, value] of Object.entries(first_name))
+                if (value == null)
+                    return res.status(400).json({
+                        error: { message: `Missing '${key}' in request body` }
+                    })
+
+
+            FriendsService.insertFriend(
+                req.app.get('db'),
+                newFriend
+            )
+                .then(friend => {
+                   // console.log('friend from router: '+ JSON.stringify(friend, null, 2))
+                    res
+                        .status(201)
+                        .location(path.posix.join(req.originalUrl, `/${friend.id}`))
+                        .json(serializeFriend(friend))
                 })
-
-        FriendsService.insertFriend(
-            req.app.get('db'),
-            newFriend,
-            siblings
-        )
-            .then(friend => {
-                res
-                    .status(201)
-                    .location(path.posix.join(req.originalUrl, `/${friend.id}`))
-                    .json(serializeFriend(friend))
-            })
-            .catch(next)
-    })
+                .catch(next)
+        }),
 
 
-friendsRouter
-    .route('/getSiblings/:friendId')
-    .get((req, res, next) => {
-        const knexInstance = req.app.get('db')
-        FriendsService.getFriendSiblings(knexInstance, req.params.friendId)
-            /*.then(siblings => siblings.map(sibling => {
-                return sibling.sibling_id
-            }))*/
-            .then(siblings => {
-                console.log('siblings', JSON.stringify(siblings, null, 2))
-                res.json(siblings)
-            })
-            .catch(next)
-    })
+    friendsRouter
+        .route('/getSiblings/:friendId')
+        .get((req, res, next) => {
+            console.log('friendId in friendsRouter: '+ req.params.friendId)
+            const knexInstance = req.app.get('db')
+            
+            FriendsService.getFriendSiblings(knexInstance, req.params.friendId)
+                .then(siblings => {
+                   console.log('sibling in siblings', JSON.stringify(siblings, null, 2))
+                    res.json(siblings)
+                })
+                .catch(next)
+        })
 
 friendsRouter
     .route('/:friendId')
-    .all((req, res, next) => {
-        FriendsService.getById(
-            req.app.get('db'),
-            req.params.friendId
-        )
-            .then(friend => {
-                if (!friend) {
-                    return res.status(404).json({
-                        error: { message: `Friend doesn't exist` }
-                    })
-                }
-                res.friend = friend
-                next()
-            })
-            .catch(next)
-    })
-    .get((req, res, next) => {
-        console.log(res.friend)
-        res.json(serializeFriend(res.friend))
-    })
-    .patch(jsonParser, (req, res, next) => {
-        const { first_name } = req.body
-        const friendToUpdate = { first_name, last_name, pfirst_name, plast_name, age, birthday, allergies, notes }
+        .all((req, res, next) => {
+            FriendsService.getById(
+                req.app.get('db'),
+                req.params.friendId
+            )
+                .then(friend => {
+                    if (!friend) {
+                        return res.status(404).json({
+                            error: { message: `Friend doesn't exist` }
+                        })
+                    }
+                    res.friend = friend
+                    next()
+                })
+                .catch(next)
+        })
+        .get((req, res, next) => {
+            console.log(res.friend)
+            res.json(serializeFriend(res.friend))
+        })
+        .patch(jsonParser, (req, res, next) => {
+            const { first_name } = req.body
+            const friendToUpdate = { first_name, last_name, pfirst_name, plast_name, age, birthday, allergies, notes }
 
-        const numberOfValues = Object.values(first_name).filter(Boolean).length
-        if (numberOfValues === 0) {
-            return res.status(400).json({
-                error: {
-                    message: `Request body must contain 'first_name'`
-                }
-            })
-        }
+            const numberOfValues = Object.values(first_name).filter(Boolean).length
+            if (numberOfValues === 0) {
+                return res.status(400).json({
+                    error: {
+                        message: `Request body must contain 'first_name'`
+                    }
+                })
+            }
 
-        FriendsService.updateFriend(
-            req.app.get('db'),
-            req.params.friendId,
-            friendToUpdate
-        )
-            .then(numRowsAffected => {
-                res.status(204).end()
-            })
-            .catch(next)
-    })
+            FriendsService.updateFriend(
+                req.app.get('db'),
+                req.params.friendId,
+                friendToUpdate
+            )
+                .then(numRowsAffected => {
+                    res.status(204).end()
+                })
+                .catch(next)
+        })
 
-    .delete((req, res, next) => {
-        FriendsService.deleteFriend(
-            req.app.get('db'),
-            req.params.friendId
-        )
-            .then(numRowsAffected => {
-                res.status(204).end()
-            })
-            .catch(next)
-    })
+        .delete((req, res, next) => {
+            FriendsService.deleteFriend(
+                req.app.get('db'),
+                req.params.friendId
+            )
+                .then(numRowsAffected => {
+                    res.status(204).end()
+                })
+                .catch(next)
+        })
 
 module.exports = friendsRouter

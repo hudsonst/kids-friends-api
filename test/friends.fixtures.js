@@ -1,6 +1,5 @@
 function makeFriendsArray() {
     return [
-
         {
             id: 1,
             first_name: "Steve",
@@ -49,6 +48,60 @@ function makeFriendsArray() {
 
 }
 
+function makeFriendsArrayWithSiblings() {
+    return [
+        {
+            id: 1,
+            first_name: "Steve",
+            last_name: "Rider",
+            age: "8",
+            pfirst_name: "Patty",
+            plast_name: "Rider",
+            birthday: "12-23",
+            allergies: "None",
+            notes: "Too cool for school",
+            siblings: [ 'Leia Rider', 'Paul Rider' ]
+        },
+        {
+            id: 2,
+            first_name: "Kayla",
+            last_name: "Rider",
+            age: "8",
+            pfirst_name: "Patty",
+            plast_name: "Rider",
+            birthday: "12-23",
+            allergies: "None",
+            notes: "Likes to sleep in",
+            siblings: [ 'Leia Rider', 'Paul Rider' ]
+        },
+        {
+            id: 3,
+            first_name: "Darren",
+            last_name: "Hawk",
+            age: "9",
+            pfirst_name: "Ramona",
+            plast_name: "Obama-Hawk",
+            birthday: "2-3",
+            allergies: "None",
+            notes: "Roblox Buddy",
+            siblings: [ ]
+        },
+        {
+            id: 4,
+            first_name: "Pema",
+            last_name: "Cling",
+            age: "10",
+            pfirst_name: "Robert",
+            plast_name: "Jordan",
+            birthday: "5-23",
+            allergies: "None",
+            notes: "Likes purple",
+            siblings: [ ]
+        },
+    ]
+
+}
+
 function makeSiblingsArray() {
     return [
         {id: 1, name: "Leia Rider" },
@@ -80,6 +133,7 @@ function makeFriendsSiblingsArray() {
 module.exports = {
     makeFriendsArray,
     makeKidsFriendsArray,
+    makeFriendsArrayWithSiblings,
     makeSiblingsArray,
     makeFriendsSiblingsArray
 }

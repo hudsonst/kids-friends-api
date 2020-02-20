@@ -48,6 +48,7 @@ kidsRouter
             newKid
         )
             .then(kid => {
+                console.log(kid)
                 res
                     .status(201)
                     .location(path.posix.join(req.originalUrl, `/${kid.id}`))

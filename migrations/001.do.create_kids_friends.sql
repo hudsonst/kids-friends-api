@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS friends (
 );
 
 CREATE TABLE IF NOT EXISTS kids_friends (
-    kid_id INTEGER REFERENCES kids(id) ON DELETE CASCADE,
-    friend_id INTEGER REFERENCES friends(id) ON DELETE CASCADE,
+    kid_id INTEGER REFERENCES kids(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    friend_id INTEGER REFERENCES friends(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (kid_id, friend_id)
 );
 
@@ -32,7 +32,9 @@ CREATE TABLE IF NOT EXISTS siblings (
 );
 
 CREATE TABLE IF NOT EXISTS friends_siblings (
-    sibling_id INTEGER REFERENCES siblings(id) ON DELETE CASCADE,
-    friend_id INTEGER REFERENCES friends(id) ON DELETE CASCADE,
-    PRIMARY KEY (sibling_id, friend_id)
+    sibling_id INTEGER NOT NULL,
+    friend_id INTEGER NOT NULL,
+    PRIMARY KEY (sibling_id, friend_id),
+    FOREIGN KEY (sibling_id) REFERENCES siblings(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES friends(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
