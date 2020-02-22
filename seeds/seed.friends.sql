@@ -15,14 +15,9 @@ INSERT INTO kids_friends (kid_id, friend_id)
     (3,1),
     (3,2);
 
-INSERT INTO siblings (name)
+INSERT INTO siblings (name, friend_id)
     VALUES
-    ('Leia Rider'),
-    ('Paul Rider');
-
-INSERT INTO friends_siblings (sibling_id, friend_id)
-    VALUES
-    (1, 1),
-    (2, 1),
-    (1, 2),
-    (2, 2);
+    ('Leia Rider', 1),
+    ('Paul Rider', 1),
+    ('Leia Rider', 2),
+    ('Paul Rider', 2);

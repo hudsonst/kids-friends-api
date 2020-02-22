@@ -49,7 +49,11 @@ const KidsService = {
                     kid.friends = friendsArr
                     return kid
                 })
+                .catch((err) => {
+                    console.log(err)})
             })
+            .catch((err) => {
+                console.log(err)})
     },
 
     deleteKid(knex, id) {

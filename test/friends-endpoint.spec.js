@@ -2,7 +2,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const FriendsService = require('../src/friends/friends-service')
 const { makeKidsArray} = require('./kids.fixtures')
-const { makeFriendsArray, makeSiblingsArray, makeFriendsSiblingsArray, makeFriendsArrayWithSiblings } = require('./friends.fixtures')
+const { makeFriendsArray, makeSiblingsArray, makeFriendsArrayWithSiblings } = require('./friends.fixtures')
 
 describe(`Friends Endpoints`, function () {
     let db
@@ -19,16 +19,15 @@ describe(`Friends Endpoints`, function () {
 
     after('disconnect from db', () => db.destroy())
 
-    before('clean the table', () => db.raw('TRUNCATE kids_friends, friends_siblings, siblings, kids, friends RESTART IDENTITY CASCADE'))
+    before('clean the table', () => db.raw('TRUNCATE kids_friends, siblings, kids, friends RESTART IDENTITY CASCADE'))
     
-    //afterEach('cleanup', () => db.raw('TRUNCATE kids_friends, friends_siblings, siblings, kids, friends RESTART IDENTITY CASCADE'))
+    afterEach('cleanup', () => db.raw('TRUNCATE kids_friends, siblings, kids, friends RESTART IDENTITY CASCADE'))
 
     describe(`Test friends endpoints`, () => {
         const kidsArray = makeKidsArray();;
         const friendsArray = makeFriendsArray();
         const friendsWithSiblingsArray = makeFriendsArrayWithSiblings();
         const siblingsArray = makeSiblingsArray();
-        const friendsSiblingsArray = makeFriendsSiblingsArray();
 
         beforeEach('insert kids and friends', () => {
                
@@ -44,11 +43,6 @@ describe(`Friends Endpoints`, function () {
                     return db
                         .into('siblings')
                         .insert(siblingsArray)
-                })
-                .then(() => {
-                    return db
-                        .into('friends_siblings')
-                        .insert(friendsSiblingsArray)
                 })
         })
 
@@ -70,8 +64,9 @@ describe(`Friends Endpoints`, function () {
                 .expect(200, friendSiblings)
         })
 
-        it.only(`creates a friend, responding with 201 and the new friend`, () => {
+        it(`creates a friend, responding with 201 and the new friend`, () => {
             const newFriend = {
+                kidId: 1,
                 first_name: "Aviya",
                 last_name: "Doe",
                 pfirst_name: "Bill",
@@ -82,6 +77,7 @@ describe(`Friends Endpoints`, function () {
                 notes: "Likes Neon green",
                 siblings: ["Pippin Doe"]
             }
+            const newSibling = [{id: 3, name: "Pippin Doe"}]
             return supertest(app)
                 .post('/api/friends')
                 .send(newFriend)
@@ -93,15 +89,13 @@ describe(`Friends Endpoints`, function () {
                     expect(res.body.age).to.eql(newFriend.age)
                     expect(res.body).to.have.property('id')
                     expect(res.headers.location).to.eql(`/api/friends/${res.body.id}`)
-                    expect(res.body.siblings).to.deep.eql(newFriend.siblings)  
+                    expect(res.body.siblings).to.eql(newSibling)
                 })
                 .then(postRes => {
-                    console.log("postRes: ", JSON.stringify(postRes.body, null, 2))
                     supertest(app)
                         .get(`/api/friends/${postRes.body.id}`)
                         .expect(res => {
-                            console.log("res: "+res.body)
-                         expect(res.body.siblings).to.deep.eql(newFriend.siblings)                      
+                         expect(res.body.siblings).to.have.property('id')                      
                     } )
         })})
         it('responds with 204 and removes the friend', () => {

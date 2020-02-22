@@ -84,7 +84,8 @@ kidsRouter
 
 kidsRouter
     .route('/:kidId')
-    .all((req, res, next) => {
+    //.all((req, res, next) => {
+    .get((req, res, next) => {
         KidsService.getById(
             req.app.get('db'),
             req.params.kidId
@@ -95,17 +96,19 @@ kidsRouter
                         error: { message: `Kid doesn't exist` }
                     })
                 }
-                return res.kid = kid
-                next()
+
+                console.log(`From router ${kid}`)
+                res.json(serializeKid(kid))
             })
             .catch(next)
     })
-    .get((req, res, next) => {
-        console.log(res.kid)
-        res.json(serializeKid(res.kid))
-    })
+    /*  .get((req, res, next) => {
+          console.log(`From router ${res.kid}`)
+          res.json(serializeKid(res.kid))
+          .catch(next)
+      })*/
     .patch(jsonParser, (req, res, next) => {
-        const { first_name } = req.body
+        const {  first_name, last_name, age, birthday, allergies, notes } = req.body
         const kidToUpdate = { first_name, last_name, age, birthday, allergies, notes }
 
         const numberOfValues = Object.values(first_name).filter(Boolean).length

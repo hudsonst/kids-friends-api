@@ -1,65 +1,59 @@
 const FriendsService = {
-    getAllFriends(knex) {
-        return knex('friends')
-            .then(friends => {
-                const friendsWithSiblings = friends.map(friend => {
-                    return knex('friends_siblings')
-                        .join('siblings', 'siblings.id', 'friends_siblings.sibling_id')
-                        .where('friend_id', friend.id)
-                        .then(siblings => {
-                            const siblingsArr = siblings.map(sibling => { return sibling.sibling_id })
-                            friend.siblings = siblingsArr
-                            return friend
-                        })
-                })
-                return Promise.all(friendsWithSiblings)
-            }
-            )
-    },
+        getAllFriends(knex) {
+            return knex('friends')
+                .then(friends => {
+                    const friendsWithSiblings = friends.map(friend => {
+                        return knex('siblings')
+                            .where('friend_id', friend.id)
+                            .then(siblings => {
+                                friend.siblings = siblings
+                                return friend
+                            })
+                    })
+                    return Promise.all(friendsWithSiblings)
+                }
+                )
+        },
 
 
     getFriendSiblings(knex, friend_id) {
-        return knex('friends_siblings')
-            .join('siblings', 'siblings.id', 'friends_siblings.sibling_id')
+        return knex('siblings')
             .where('friend_id', friend_id)
-            .then(siblings => {
-                return siblings.map(sibling => sibling.name )
+            .catch((err) => {
+                console.log(err)
             })
     },
 
-    insertFriend(knex, newFriend) {
-        console.log(newFriend)
-        const siblings = newFriend.siblings.map(sibling => {return { name: sibling }})
+    insertFriend(knex, newFriend, kidId) {
+        const siblings = newFriend.siblings.map(sibling => { return { name: sibling } })
         delete newFriend.siblings
         return knex
             .insert(newFriend)
             .into('friends')
             .returning('id')
             .then(function (friend_id) {
-               // console.log(siblings)
+                //make friend id into an integer
+                const f_nid = Number(friend_id)
+                console.log(f_nid)
+                return knex.insert({ kid_id: kidId, friend_id: f_nid })
+                    .into('kids_friends')
+                    .returning(f_nid)
+            })
+            .then(function (f_nid) {
+                //get integer out of returned array
+                f_nid = f_nid[0]
                 siblings.map(sibling => {
-                  //  console.log('sibling: ' + JSON.stringify(sibling, null, 2))
+                    newSibling = { name: sibling.name, friend_id: f_nid }
                     return knex
-                        .insert(sibling)
+                        .insert(newSibling)
                         .into('siblings')
-                        .returning('id')
+                        .catch((err) => {
+                            console.log(err)
                         })
-                        .then(function (sibling_id) {
-                            
-                            const f_nid = Number(friend_id) 
-                            const s_nid = Number(sibling_id)
-                            const updatedEntry = { sibling_id: s_nid, friend_id: f_nid }
-                            console.log(`Updated Entry: ${s_nid} ${f_nid}`)
+                })
 
-                            return knex('friends_siblings')
-                                .insert(updatedEntry)
-                                .catch((err) => {
-                                    console.log(err)
-                                })
-                        })
-                
-                newFriend.id = Number(friend_id)
-                newFriend.siblings = siblings.map(sibling => sibling.name)
+                newFriend.id = f_nid
+                newFriend.siblings = siblings
                 return newFriend
             })
     },
@@ -67,11 +61,10 @@ const FriendsService = {
     getById(knex, id) {
         return knex('friends').select('*').where('id', id).first()
             .then(friend => {
-                return knex('friends_siblings')
-                    .join('siblings', 'siblings.id', 'friends_siblings.sibling_id')
-                    .where('friend_id', friend.id)
+                return knex('siblings')
+                    .where('friend_id', id)
                     .then(siblings => {
-                        friend.siblings = siblings.map(sibling => { return sibling.name })
+                        friend.siblings = siblings
                         return friend
                     })
             })
@@ -85,11 +78,39 @@ const FriendsService = {
             .delete()
     },
 
-    updateFriend(knex, id, newFriendFields) {
+    updateFriend(knex, id, newFriendFields, siblings) {
         return knex('friends')
-            .where({ id })
             .update(newFriendFields)
-    },
+            .where({ id })
+            .then(function () {
+               // siblings=JSON.parse(siblings)
+                siblings.forEach(sibling => {
+                    if (sibling.id) {
+                    const s_id = sibling.id
+                    delete sibling.id
+                    console.log(sibling)
+                    return knex('siblings')
+                        .update(sibling)
+                        .where('siblings.id', s_id)
+                        .catch((err) => {
+                            console.log(err)
+                        })
+                    } else {
+                        //New sibling!
+                    newSibling = { name: sibling, friend_id: id }
+                    return knex
+                        .insert(newSibling)
+                        .into('siblings')
+                        .catch((err) => {
+                            console.log(err)
+                        })
+                    }
+                })
+
+            })
+    }
+
+
 }
 
 module.exports = FriendsService;

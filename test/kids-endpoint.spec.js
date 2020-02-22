@@ -1,8 +1,8 @@
 const knex = require('knex')
-const app = require('./app')
-const KidsService = require('./kids/kids-service')
-const { makeKidsArray} = require('../test/kids.fixtures')
-const { makeFriendsArray, makeKidsFriendsArray } = require('../test/friends.fixtures')
+const app = require('../src/app')
+const KidsService = require('../src/kids/kids-service')
+const { makeKidsArray} = require('./kids.fixtures')
+const { makeFriendsArray, makeKidsFriendsArray } = require('./friends.fixtures')
 
 describe(`Kids Endpoints`, function () {
     let db
@@ -19,9 +19,9 @@ describe(`Kids Endpoints`, function () {
 
     after('disconnect from db', () => db.destroy())
 
-    before('clean the table', () => db.raw('TRUNCATE kids_friends, friends_siblings, siblings, kids, friends RESTART IDENTITY CASCADE'))
+    before('clean the table', () => db.raw('TRUNCATE kids_friends, siblings, kids, friends RESTART IDENTITY CASCADE'))
     
-    afterEach('cleanup', () => db.raw('TRUNCATE kids_friends, friends_siblings, siblings, kids, friends RESTART IDENTITY CASCADE'))
+    afterEach('cleanup', () => db.raw('TRUNCATE kids_friends, siblings, kids, friends RESTART IDENTITY CASCADE'))
 
     describe(`getAllKids()`, () => {
         const kidsArray = makeKidsArray();;
@@ -57,7 +57,10 @@ describe(`Kids Endpoints`, function () {
             return supertest(app)
                 .get('/api/kids/1')
                 .expect(200, kidsArray[0])
-        })
+                .catch((err) => {
+                    console.log(err)})
+             })
+        
 
         it(`creates an kid, responding with 201 and the new kid`, () => {
             before('next ID val', () => db.raw('SELECT setval(\'public.kids_id_seq\', (SELECT MAX(id) FROM kids)+1);'))

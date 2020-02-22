@@ -60,7 +60,7 @@ function makeFriendsArrayWithSiblings() {
             birthday: "12-23",
             allergies: "None",
             notes: "Too cool for school",
-            siblings: [ 'Leia Rider', 'Paul Rider' ]
+            siblings: [ {id: 1, name: 'Leia Rider'}, {id: 2, name: 'Paul Rider'} ]
         },
         {
             id: 2,
@@ -72,7 +72,7 @@ function makeFriendsArrayWithSiblings() {
             birthday: "12-23",
             allergies: "None",
             notes: "Likes to sleep in",
-            siblings: [ 'Leia Rider', 'Paul Rider' ]
+            siblings: [ {id: 1, name: 'Leia Rider'}, {id: 2, name: 'Paul Rider'} ]
         },
         {
             id: 3,
@@ -104,8 +104,10 @@ function makeFriendsArrayWithSiblings() {
 
 function makeSiblingsArray() {
     return [
-        {id: 1, name: "Leia Rider" },
-        {id: 2, name: "Paul Rider"}
+        {id: 1, name: "Leia Rider", friend_id: 1},
+        {id: 2, name: "Paul Rider", friend_id: 1},
+        {id: 3, name: "Leia Rider", friend_id: 2},
+        {id: 4, name: "Paul Rider", friend_id: 2}
     ]
 }
 
@@ -121,19 +123,10 @@ function makeKidsFriendsArray() {
     ]
 }
 
-function makeFriendsSiblingsArray() {
-    return [
-        { sibling_id: 1, friend_id: 1 },
-        { sibling_id: 2, friend_id: 1 },
-        { sibling_id: 1, friend_id: 2 },
-        { sibling_id: 2, friend_id: 2 }
-    ]
-}
 
 module.exports = {
     makeFriendsArray,
     makeKidsFriendsArray,
     makeFriendsArrayWithSiblings,
-    makeSiblingsArray,
-    makeFriendsSiblingsArray
+    makeSiblingsArray
 }
