@@ -10,10 +10,11 @@ const serializeKid = kid => ({
     id: kid.id,
     first_name: xss(kid.first_name),
     last_name: xss(kid.last_name),
-    age: xss(kid.age),
+    age: kid.age,
     birthday: xss(kid.birthday),
     allergies: xss(kid.allergies),
-    notes: xss(kid.notes)
+    notes: xss(kid.notes),
+    friends: kid.friends
 })
 
 kidsRouter
@@ -23,7 +24,6 @@ kidsRouter
 
         KidsService.getAllKids(knexInstance)
             .then(kids => {
-                console.log('kids', JSON.stringify(kids, null, 2))
                 res.json(kids.map(serializeKid))
             }
             )
@@ -35,8 +35,8 @@ kidsRouter
     .route('/')
     .post(jsonParser, (req, res, next) => {
         const { first_name, last_name, age, birthday, allergies, notes } = req.body
-        const newKid = { first_name, last_name, age, birthday, allergies, notes }
-
+        const newKid = { first_name, last_name, birthday, allergies, notes }
+        if (age) {newKid.age = age }
         for (const [key, value] of Object.entries(first_name))
             if (value == null)
                 return res.status(400).json({
@@ -84,7 +84,6 @@ kidsRouter
 
 kidsRouter
     .route('/:kidId')
-    //.all((req, res, next) => {
     .get((req, res, next) => {
         KidsService.getById(
             req.app.get('db'),
@@ -96,21 +95,14 @@ kidsRouter
                         error: { message: `Kid doesn't exist` }
                     })
                 }
-
-                console.log(`From router ${kid}`)
                 res.json(serializeKid(kid))
             })
             .catch(next)
     })
-    /*  .get((req, res, next) => {
-          console.log(`From router ${res.kid}`)
-          res.json(serializeKid(res.kid))
-          .catch(next)
-      })*/
     .patch(jsonParser, (req, res, next) => {
         const {  first_name, last_name, age, birthday, allergies, notes } = req.body
-        const kidToUpdate = { first_name, last_name, age, birthday, allergies, notes }
-
+        const kidToUpdate = { first_name, last_name, birthday, allergies, notes }
+        if (age) {kidToUpdate.age = age }
         const numberOfValues = Object.values(first_name).filter(Boolean).length
         if (numberOfValues === 0) {
             return res.status(400).json({

@@ -1,7 +1,7 @@
 const knex = require('knex')
 const app = require('../src/app')
 const KidsService = require('../src/kids/kids-service')
-const { makeKidsArray} = require('./kids.fixtures')
+const { makeKidsLoadArray, makeKidsReturnArray} = require('./kids.fixtures')
 const { makeFriendsArray, makeKidsFriendsArray } = require('./friends.fixtures')
 
 describe(`Kids Endpoints`, function () {
@@ -24,7 +24,8 @@ describe(`Kids Endpoints`, function () {
     afterEach('cleanup', () => db.raw('TRUNCATE kids_friends, siblings, kids, friends RESTART IDENTITY CASCADE'))
 
     describe(`getAllKids()`, () => {
-        const kidsArray = makeKidsArray();;
+        const kidsLoadArray = makeKidsLoadArray();
+        const kidsReturnArray = makeKidsReturnArray();
         const friendsArray = makeFriendsArray();
         const kidsFriendsArray = makeKidsFriendsArray();
 
@@ -32,7 +33,7 @@ describe(`Kids Endpoints`, function () {
                
             return db
                 .into('kids')
-                .insert(kidsArray)
+                .insert(kidsLoadArray)
                 .then(() => {
                     return db
                         .into('friends')
@@ -49,14 +50,14 @@ describe(`Kids Endpoints`, function () {
         it(`resolves all kids from 'kids' table - endpoint`, () => {
             return supertest(app)
                 .get('/api/kids/Home')
-                .expect(200, kidsArray)
+                .expect(200, kidsReturnArray)
         }
         )
 
         it(`gets one kid in particular - endpoint`, () => {
             return supertest(app)
                 .get('/api/kids/1')
-                .expect(200, kidsArray[0])
+                .expect(200, kidsReturnArray[0])
                 .catch((err) => {
                     console.log(err)})
              })
@@ -67,7 +68,7 @@ describe(`Kids Endpoints`, function () {
             const newKid = {
                 first_name: "Aviya",
                 last_name: "Doe",
-                age: "8",
+                age: 8,
                 birthday: "11/20",
                 allergies: "None",
                 notes: "Likes Neon green"
@@ -86,13 +87,14 @@ describe(`Kids Endpoints`, function () {
                 .then(postRes =>
                     supertest(app)
                         .get(`/api/kids/${postRes.body.id}`)
-                        .expect(postRes.body)
-                )
-        })
+                        .expect(res => {
+                         expect(res.body).to.have.property('friends')
+                        })
+        )})
         
         it('responds with 204 and removes the kid', () => {
             const idToRemove = 2
-            const expectedKids = kidsArray.filter(kid => kid.id !== idToRemove)
+            const expectedKids = kidsReturnArray.filter(kid => kid.id !== idToRemove)
             return supertest(app)
                 .delete(`/api/kids/${idToRemove}`)
                 .expect(204)
