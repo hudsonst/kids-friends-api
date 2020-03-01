@@ -40,7 +40,6 @@ friendsRouter
         const { first_name, last_name, pfirst_name, plast_name, age, birthday, allergies, notes, siblings, kidId } = req.body
         const newFriend = { first_name, last_name, pfirst_name, age, plast_name, birthday, allergies, notes, siblings, kidId }
 
-        //if (age) {newFriend.age = age}
         for (const [key, value] of Object.entries(first_name))
             if (value == null)
                 return res.status(400).json({
@@ -113,8 +112,7 @@ friendsRouter
         })
         .patch(jsonParser, (req, res, next) => {
             const { first_name, last_name, pfirst_name, plast_name, age, birthday, allergies, notes, siblings } = req.body
-            const friendToUpdate = { first_name, last_name, pfirst_name, plast_name, birthday, allergies, notes }
-            if (age) { friendToUpdate.age = age }
+            const friendToUpdate = { first_name, last_name, pfirst_name, plast_name, age, birthday, allergies, notes }
             const numberOfValues = Object.values(first_name).filter(Boolean).length
             if (numberOfValues === 0) {
                 return res.status(400).json({

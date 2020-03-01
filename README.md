@@ -1,26 +1,52 @@
-# Express Boilerplate!
+# Your Kid's Friends API
 
-This is a boilerplate project used for starting new projects!
+This API is the backend of an app called "Your Kid's Friends!" It's a database of your kids and their friends, sorted by kid. Kids and Friends can be added and edited. Friends each have a list of siblings as well. The api uses Express and Knex, and the database is Postgres. 
 
-## Set up
+## Endpoints
 
-Complete the following steps to start a new project (NEW-PROJECT-NAME):
+### kids-routers.js
 
-1. Clone this repository to your local machine `git clone BOILERPLATE-URL NEW-PROJECTS-NAME`
-2. `cd` into the cloned repository
-3. Make a fresh start of the git history for this project with `rm -rf .git && git init`
-4. Install the node dependencies `npm install`
-5. Move the example Environment file to `.env` that will be ignored by git and read by the express server `mv example.env .env`
-6. Edit the contents of the `package.json` to use NEW-PROJECT-NAME instead of `"name": "express-boilerplate",`
+/Home
+-----
+GET - The Home endpoint returns a master list of kids and all of their Friends.
 
-## Scripts
+/
+-
+POST - Adds a kid to the kids table.
 
-Start the application `npm start`
+/:kidId
+-------
+GET - Gets the kid info from the kids and kids_friends tables.
+PATCH - Updates the kid in the kids and kids_friends tables.
+DELETE - Deletes the kid from the kids and kids_friends tables.
 
-Start nodemon for the application `npm run dev`
+/getFriends/:kidId
+------------------
+GET - gets all the friends of the kid referenced by 'kidId'. 
 
-Run the tests `npm test`
+### friends-routers.js
 
-## Deploying
+/
+-
+GET - get all friends from the friends table.
+POST - Adds a friend to a the friends table.
 
-When your new project is ready for deployment, add a new Heroku application with `heroku create`. This will make a new git remote called "heroku" and you can then `npm run deploy` which will push to this remote's master branch.
+/:friendId
+----------
+GET - gets friend from friend table (including siblings).
+PATCH - updates friend in the friends table and/or siblings in the siblings table.
+DELETE - deletes friend from the friends table (including siblings).
+
+
+/siblings/:friendId
+-------------------
+POST - adds siblings to the siblings table to the friend referenced by 'friendId'.
+
+/siblings/:siblingId
+--------------------
+DELETE - Deletes the sibling from the siblings table.
+
+
+
+
+

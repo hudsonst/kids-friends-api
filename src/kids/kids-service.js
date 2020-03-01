@@ -1,6 +1,6 @@
 const KidsService = {
     getAllKids(knex) {
-      return  knex('kids')
+      return knex('kids')
             .then(kids => {
                 const kidsWithFriends = kids.map(kid => {
                     return knex('kids_friends')
@@ -17,9 +17,9 @@ const KidsService = {
             ) 
     },
 
-    getAllKidFriends(knex) {
+    /*getAllKidFriends(knex) {
         return knex.select('*').from('kids_friends')
-    },
+    },*/
 
     getKidFriends(knex, kid_id) {
         return knex('kids_friends')

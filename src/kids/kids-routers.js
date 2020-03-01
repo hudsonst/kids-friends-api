@@ -35,8 +35,7 @@ kidsRouter
     .route('/')
     .post(jsonParser, (req, res, next) => {
         const { first_name, last_name, age, birthday, allergies, notes } = req.body
-        const newKid = { first_name, last_name, birthday, allergies, notes }
-        if (age) {newKid.age = age }
+        const newKid = { first_name, last_name, age, birthday, allergies, notes }
         for (const [key, value] of Object.entries(first_name))
             if (value == null)
                 return res.status(400).json({
@@ -57,7 +56,7 @@ kidsRouter
             .catch(next)
     })
 
-kidsRouter
+/*kidsRouter
     .route('/getFriends')
     .get((req, res, next) => {
         const knexInstance = req.app.get('db')
@@ -66,7 +65,7 @@ kidsRouter
                 res.json(friends)
             })
             .catch(next)
-    })
+    })*/
 
 kidsRouter
     .route('/getFriends/:kidId')
@@ -100,9 +99,8 @@ kidsRouter
             .catch(next)
     })
     .patch(jsonParser, (req, res, next) => {
-        const {  first_name, last_name, age, birthday, allergies, notes } = req.body
-        const kidToUpdate = { first_name, last_name, birthday, allergies, notes }
-        if (age) {kidToUpdate.age = age }
+        const { first_name, last_name, age, birthday, allergies, notes } = req.body
+        const kidToUpdate = { first_name, last_name, age, birthday, allergies, notes }
         const numberOfValues = Object.values(first_name).filter(Boolean).length
         if (numberOfValues === 0) {
             return res.status(400).json({
